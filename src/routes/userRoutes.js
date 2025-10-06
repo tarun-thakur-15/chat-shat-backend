@@ -28,7 +28,7 @@ import {
   changeFullName,
   changeUsername,
 } from "../controllers/userController.js";
-import { protect } from "../middlewares/authmiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
