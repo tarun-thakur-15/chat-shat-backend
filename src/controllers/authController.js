@@ -83,8 +83,9 @@ export async function login(req, res, next) {
     res.cookie("accessToken", accessToken, {
       httpOnly: true, // cannot be accessed by JS
       secure: process.env.NODE_ENV === "production", // true in prod (HTTPS)
-      sameSite: "strict", // helps prevent CSRF
-      maxAge: 60 * 60 * 1000, // 1h in ms
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,// 7 days in ms
+      path: "/",
     });
 
     // You can still send user info in JSON, but no need to send the token anymore
@@ -201,8 +202,9 @@ export async function verifyOtp(req, res, next) {
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/",
       });
 
       return res.json({

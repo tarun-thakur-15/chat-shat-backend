@@ -12,8 +12,7 @@ const PORT = process.env.PORT || 10000;
 // === Setup Socket.IO ===
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // ⚠️ replace with frontend URL in production
-    // methods: ["GET", "POST"],
+    origin: ["http://localhost:3000", "https://chat-shat.vercel.app"], // array of allowed origins
     credentials: true,
   },
 });
@@ -22,7 +21,7 @@ app.set("io", io);
 
 // ✅ pass io to socket handler
 chatSocket(io);
-
+console.log("mongo url is:- ", process.env.MONGO_URI);
 // === Connect MongoDB + Start Server ===
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -33,7 +32,7 @@ mongoose
     console.log("✅ MongoDB connected");
 
     server.listen(PORT, () => {
-      console.log(`🚀 Server + Socket.IO running on http://localhost:${PORT}`);
+      console.log(`🚀 Server + Socket.IO running on ${PORT}`);
     });
   })
   .catch((err) => {
