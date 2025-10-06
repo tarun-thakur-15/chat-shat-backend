@@ -8,8 +8,8 @@ import cookieParser from "cookie-parser";
 import { scheduleCompressedFileCleanup } from "./cronjob/cleanup.js";
 
 dotenv.config();
-
 const app = express();
+
 
 // Middlewares
 app.use(cors({

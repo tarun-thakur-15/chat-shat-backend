@@ -1,7 +1,8 @@
 import { Resend } from "resend";
+import dotenv from "dotenv";
+dotenv.config();
 
-console.log("Resend API Key Loaded:", !!process.env.RESEND_API_KEY);
-const resend = new Resend("re_Y9B7FxG6_Htoj2eD4jtriWTRNPXModTku");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendOtpEmail(to, otp) {
   try {

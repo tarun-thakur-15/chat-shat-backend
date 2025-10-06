@@ -8,12 +8,10 @@ import FormData from "form-data";
 import sharp from "sharp";
 import os from "os";
 import path from "path";
-import mongoose from "mongoose";
-
-const TELEGRAM_TOKEN =
-  process.env.TELEGRAM_BOT_TOKEN ||
-  "8010186011:AAH3W3Hog0Fj563D_Pzm0NJZS4zPgymD5VQ";
-const CHANNEL_ID = "-1003163847318";
+import dotenv from "dotenv";
+dotenv.config();
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHANNEL_ID = process.env.CHANNEL_ID;
 
 export const getConversations = async (req, res) => {
   try {
@@ -215,7 +213,7 @@ export const sendMessage = async (req, res) => {
       fileName,
       fileSize,
       mediaUrl,
-     fileType: fileType || "doc",
+      fileType: fileType || "doc",
       status: "sent",
     });
 
@@ -520,17 +518,26 @@ export const unsendMessage = async (req, res) => {
     const { messageId } = req.body;
 
     if (!messageId) {
-      return res.status(400).json({ success: false, message: "messageId is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "messageId is required" });
     }
 
     const message = await Chat.findById(messageId);
     if (!message) {
-      return res.status(404).json({ success: false, message: "Message not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Message not found" });
     }
 
     // Only sender can unsend
     if (message.sender.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "You can only unsend your own messages" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "You can only unsend your own messages",
+        });
     }
 
     const conversationId = message.conversation;
@@ -539,10 +546,12 @@ export const unsendMessage = async (req, res) => {
     await Chat.findByIdAndDelete(messageId);
 
     // Update latestMessage in conversation
-    const lastMessage = await Chat.findOne({ conversation: conversationId }).sort({ createdAt: -1 });
-    await Conversation.findByIdAndUpdate(conversationId, { 
-      latestMessage: lastMessage ? lastMessage._id : null, 
-      updatedAt: new Date() 
+    const lastMessage = await Chat.findOne({
+      conversation: conversationId,
+    }).sort({ createdAt: -1 });
+    await Conversation.findByIdAndUpdate(conversationId, {
+      latestMessage: lastMessage ? lastMessage._id : null,
+      updatedAt: new Date(),
     });
 
     const io = req.app.get("io");
