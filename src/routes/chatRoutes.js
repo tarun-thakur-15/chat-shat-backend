@@ -1,6 +1,6 @@
 import express from "express";
 import { startConversation, sendMessage, getMessages, markMessageSeen, getConversations, unsendMessage } from "../controllers/chatController.js";
-import { protect } from "../middlewares/authmiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 import { upload } from "../middlewares/upload.js";
 
 const router = express.Router();
