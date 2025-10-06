@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# environment files
+.env
+.env.local
+
+# build outputs
+.next/
+dist/
+out/
+
+# system files
+.DS_Store
+Thumbs.db
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# lockfiles (optional)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
