@@ -12,6 +12,7 @@ const app = express();
 
 
 // Middlewares
+app.set("trust proxy", 1);
 app.use(cors({
   origin: ['http://localhost:3000', 'https://chat-shat.vercel.app'],
   credentials: true,
