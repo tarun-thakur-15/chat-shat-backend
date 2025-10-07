@@ -80,6 +80,7 @@ export async function login(req, res, next) {
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const accessToken = signAccessTokenn(user);
+ 
     res.cookie("accessToken", accessToken, {
       httpOnly: true, // cannot be accessed by JS
       secure: process.env.NODE_ENV === "production", // true in prod (HTTPS)

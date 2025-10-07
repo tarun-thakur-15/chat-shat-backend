@@ -9,12 +9,12 @@ import { scheduleCompressedFileCleanup } from "./cronjob/cleanup.js";
 
 dotenv.config();
 const app = express();
-
+app.set("trust proxy", 1);
 
 // Middlewares
-app.set("trust proxy", 1);
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://chat-shat.vercel.app'],
+  origin: ['http://localhost:3000/', 'https://chat-shat.vercel.app/'],
   credentials: true,
 }));
 
