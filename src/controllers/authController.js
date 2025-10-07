@@ -87,6 +87,7 @@ export async function login(req, res, next) {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,// 7 days in ms
       path: "/",
+      domain: ".onrender.com",
     });
 
     // You can still send user info in JSON, but no need to send the token anymore
@@ -206,6 +207,7 @@ export async function verifyOtp(req, res, next) {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
+        domain: ".onrender.com",
       });
 
       return res.json({
