@@ -8,7 +8,7 @@ import { chatSocket } from "./sockets/chatSocket.js"; // ✅ import your socket 
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 10000;
-
+app.set("trust proxy", 1);
 // === Setup Socket.IO ===
 export const io = new Server(server, {
   cors: {
