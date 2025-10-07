@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 10000;
 // === Setup Socket.IO ===
 export const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000/", "https://chat-shat.vercel.app/"], // array of allowed origins
+    origin: ["http://localhost:3000", "https://chat-shat.vercel.app"], // array of allowed origins
     credentials: true,
   },
 });
