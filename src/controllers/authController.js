@@ -80,12 +80,13 @@ export async function login(req, res, next) {
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const accessToken = signAccessTokenn(user);
- 
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true, // cannot be accessed by JS
       secure: process.env.NODE_ENV === "production", // only true in prod
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,// 7 days in ms
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
       path: "/",
     });
 
@@ -150,7 +151,9 @@ export async function verifyOtp(req, res, next) {
     const { identifier, code, purpose } = req.body;
 
     if (!identifier || !code || !purpose) {
-      return res.status(400).json({ message: "identifier, code, purpose required" });
+      return res
+        .status(400)
+        .json({ message: "identifier, code, purpose required" });
     }
 
     if (!["signup", "password_reset"].includes(purpose)) {
@@ -184,7 +187,8 @@ export async function verifyOtp(req, res, next) {
     }
 
     if (!otpDoc) return res.status(400).json({ message: "Invalid OTP" });
-    if (otpDoc.expiresAt < new Date()) return res.status(400).json({ message: "OTP expired" });
+    if (otpDoc.expiresAt < new Date())
+      return res.status(400).json({ message: "OTP expired" });
 
     otpDoc.consumed = true;
     await otpDoc.save();
@@ -203,7 +207,8 @@ export async function verifyOtp(req, res, next) {
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // only true in prod
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
       });
@@ -297,4 +302,3 @@ export async function resetPassword(req, res, next) {
     next(err);
   }
 }
-  
