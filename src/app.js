@@ -11,13 +11,13 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
-app.use((req, res, next) => {
-  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
-    next();
-  } else {
-    return res.redirect(`https://${req.headers.host}${req.url}`);
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+//     next();
+//   } else {
+//     return res.redirect(`https://${req.headers.host}${req.url}`);
+//   }
+// });
 
 // Middlewares
 
