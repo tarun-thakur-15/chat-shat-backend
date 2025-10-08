@@ -22,7 +22,7 @@ app.set("trust proxy", 1);
 // Middlewares
 
 app.use(cors({
-  origin: ["https://chat-shat.vercel.app"],
+  origin: ["https://chat-shat.vercel.app", "http://localhost:3000"],
   credentials: true,
 }));
 
