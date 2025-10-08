@@ -84,8 +84,7 @@ export async function login(req, res, next) {
     res.cookie("accessToken", accessToken, {
       httpOnly: true, // cannot be accessed by JS
       secure: process.env.NODE_ENV === "production", // only true in prod
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
       path: "/",
     });
@@ -206,9 +205,8 @@ export async function verifyOtp(req, res, next) {
 
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // only true in prod
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
+        secure: process.env.NODE_ENV === "production", 
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
       });
