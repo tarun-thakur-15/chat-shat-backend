@@ -11,10 +11,18 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
+app.use((req, res, next) => {
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    next();
+  } else {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+});
+
 // Middlewares
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://chat-shat.vercel.app'],
+  origin: ["https://chat-shat.vercel.app"],
   credentials: true,
 }));
 

@@ -83,11 +83,10 @@ export async function login(req, res, next) {
  
     res.cookie("accessToken", accessToken, {
       httpOnly: true, // cannot be accessed by JS
-      secure: process.env.NODE_ENV === "production", // true in prod (HTTPS)
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,// 7 days in ms
       path: "/",
-      domain: ".onrender.com",
     });
 
     // You can still send user info in JSON, but no need to send the token anymore
@@ -203,11 +202,10 @@ export async function verifyOtp(req, res, next) {
 
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: true,
+        sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
-        domain: ".onrender.com",
       });
 
       return res.json({

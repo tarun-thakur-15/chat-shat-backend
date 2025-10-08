@@ -12,7 +12,7 @@ app.set("trust proxy", 1);
 // === Setup Socket.IO ===
 export const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "https://chat-shat.vercel.app"], // array of allowed origins
+    origin: ["https://chat-shat.vercel.app"],
     credentials: true,
   },
 });
