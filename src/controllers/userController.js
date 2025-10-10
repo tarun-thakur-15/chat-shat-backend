@@ -8,6 +8,7 @@ import sharp from "sharp";
 import os from "os";
 import fs from "fs";
 import path from "path";
+import axios from "axios";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
