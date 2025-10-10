@@ -494,7 +494,7 @@ export const getMutuals = async (req, res) => {
 
 export const getSuggestedUsers = async (req, res) => {
   try {
-    const suggestedUserId = "68ca6900834bb6530bc7fb4f"; // hardcoded for now
+    const suggestedUserId = "68e3bff40683c2944cb37e41"; //user id of tarun thakur
 
     const user = await User.findById(suggestedUserId).select(
       "fullName username profileImage email friends friendRequests createdAt"
