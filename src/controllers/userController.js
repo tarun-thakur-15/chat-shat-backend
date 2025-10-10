@@ -8,6 +8,52 @@ import sharp from "sharp";
 import fs from "fs";
 import path from "path";
 
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHANNEL_ID = process.env.CHANNEL_ID;
+
+// export const uploadProfileImage = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user._id) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+
+//     const { filePath } = req.body;
+//     if (!filePath) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "filePath is required" });
+//     }
+
+//     const base64Data = filePath.split(",")[1];
+//     const buffer = Buffer.from(base64Data, "base64");
+
+//     const filename = `${uuidv4()}.jpeg`;
+//     const uploadPath = path.join(process.cwd(), "uploads", filename);
+
+//     await sharp(buffer)
+//       .jpeg({ quality: 70 })
+//       .toFile(uploadPath);
+
+//     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${filename}`;
+
+//     const user = await User.findByIdAndUpdate(
+//       req.user._id,
+//       { profileImage: imageUrl },
+//       { new: true }
+//     ).select("profileImage");
+
+//     if (!user) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "User not found" });
+//     }
+
+//     res.json({ success: true, profileImage: user.profileImage });
+//   } catch (err) {
+//     console.error("❌ Error in uploadProfileImage:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 export const uploadProfileImage = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
@@ -25,38 +71,111 @@ export const uploadProfileImage = async (req, res) => {
     const base64Data = filePath.split(",")[1];
     const buffer = Buffer.from(base64Data, "base64");
 
-    // Generate unique filename
-    const filename = `${uuidv4()}.jpeg`;
-    const uploadPath = path.join(process.cwd(), "uploads", filename);
-
-    // Compress & save with sharp
+    // Compress to temporary file
+    const tmpPath = path.join(os.tmpdir(), `${uuidv4()}.jpeg`);
     await sharp(buffer)
-      .jpeg({ quality: 70 }) // reduce size but keep quality good
-      .toFile(uploadPath);
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(tmpPath);
 
-    // Construct public URL
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${filename}`;
+    // Prepare FormData for Telegram upload
+    const formData = new FormData();
+    formData.append("chat_id", CHANNEL_ID);
+    formData.append("photo", fs.createReadStream(tmpPath));
 
-    // Update user with new profile image
+    // Send to Telegram
+    const tgRes = await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`,
+      formData,
+      { headers: formData.getHeaders() }
+    );
+
+    // Get file_id of uploaded photo
+    const photos = tgRes.data.result.photo;
+    const fileId = photos[photos.length - 1].file_id;
+
+    // Request Telegram for file path (publicly accessible)
+    const fileRes = await axios.get(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`
+    );
+    const tgFilePath = fileRes.data.result.file_path;
+    const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${tgFilePath}`;
+
+    // Clean up temporary file
+    fs.unlink(tmpPath, () => {});
+
+    // Update user profile image
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { profileImage: imageUrl },
       { new: true }
     ).select("profileImage");
 
-    if (!user) {
+    if (!user)
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
-    }
 
     res.json({ success: true, profileImage: user.profileImage });
   } catch (err) {
-    console.error("❌ Error in uploadProfileImage:", err);
+    console.error("❌ Error in uploadProfileImage:", err.response?.data || err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// export const uploadCoverImage = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user._id) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+
+//     const { filePath } = req.body;
+//     if (!filePath) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "filePath is required" });
+//     }
+
+//     const base64Data = filePath.split(",")[1];
+//     const buffer = Buffer.from(base64Data, "base64");
+
+//     const MAX_SIZE_BYTES = 3 * 1024 * 1024;
+//     if (buffer.length > MAX_SIZE_BYTES) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Cover image cannot exceed 3MB" });
+//     }
+
+//     const fileName = `${uuidv4()}.jpeg`;
+//     const uploadDir = path.join(process.cwd(), "uploads");
+//     if (!fs.existsSync(uploadDir)) {
+//       fs.mkdirSync(uploadDir);
+//     }
+//     const filePathOnDisk = path.join(uploadDir, fileName);
+
+//     await sharp(buffer)
+//       .jpeg({ quality: 75 })
+//       .toFile(filePathOnDisk);
+
+//     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+//     const user = await User.findByIdAndUpdate(
+//       req.user._id,
+//       { coverImage: imageUrl },
+//       { new: true }
+//     ).select("coverImage");
+
+//     if (!user) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "User not found" });
+//     }
+
+//     res.json({ success: true, coverImage: user.coverImage });
+//   } catch (err) {
+//     console.error("❌ Error in uploadCoverImage:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 export const uploadCoverImage = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
@@ -70,33 +189,54 @@ export const uploadCoverImage = async (req, res) => {
         .json({ success: false, message: "filePath is required" });
     }
 
-    // ✅ Decode base64 → buffer
+    // Decode base64 → buffer
     const base64Data = filePath.split(",")[1];
     const buffer = Buffer.from(base64Data, "base64");
 
-    // ✅ Check size limit before processing
-    const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+    // Check size limit before processing (max 3MB)
+    const MAX_SIZE_BYTES = 3 * 1024 * 1024;
     if (buffer.length > MAX_SIZE_BYTES) {
       return res
         .status(400)
         .json({ success: false, message: "Cover image cannot exceed 3MB" });
     }
 
-    // ✅ Generate unique filename
-    const fileName = `${uuidv4()}.jpeg`;
-    const uploadDir = path.join(process.cwd(), "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
-    const filePathOnDisk = path.join(uploadDir, fileName);
-
-    // ✅ Compress + save using sharp
+    // Save to a temporary compressed file
+    const tmpPath = path.join(os.tmpdir(), `${uuidv4()}.jpeg`);
     await sharp(buffer)
-      .jpeg({ quality: 75 }) // reduce quality, keep dimensions
-      .toFile(filePathOnDisk);
+      .resize({ width: 1920, withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(tmpPath);
 
-    // ✅ Save relative path in DB (not full base64!)
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+    // Prepare FormData for Telegram upload
+    const formData = new FormData();
+    formData.append("chat_id", CHANNEL_ID);
+    formData.append("photo", fs.createReadStream(tmpPath));
+
+    // Upload to Telegram
+    const tgRes = await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`,
+      formData,
+      { headers: formData.getHeaders() }
+    );
+
+    // Get file_id of uploaded photo
+    const photos = tgRes.data.result.photo;
+    const fileId = photos[photos.length - 1].file_id;
+
+    // Request Telegram file path
+    const fileRes = await axios.get(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`
+    );
+    const tgFilePath = fileRes.data.result.file_path;
+
+    // Construct Telegram CDN URL
+    const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${tgFilePath}`;
+
+    // Clean up temp file
+    fs.unlink(tmpPath, () => {});
+
+    // Update user with new cover image
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { coverImage: imageUrl },
@@ -111,11 +251,10 @@ export const uploadCoverImage = async (req, res) => {
 
     res.json({ success: true, coverImage: user.coverImage });
   } catch (err) {
-    console.error("❌ Error in uploadCoverImage:", err);
+    console.error("❌ Error in uploadCoverImage:", err.response?.data || err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 export const updateBio = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
@@ -400,12 +539,10 @@ export const sendFriendRequest = async (req, res) => {
     const currentUserId = req.user._id;
 
     if (userId === String(currentUserId)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "You cannot send a friend request to yourself.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "You cannot send a friend request to yourself.",
+      });
     }
 
     const targetUser = await User.findById(userId);
@@ -454,12 +591,10 @@ export const acceptFriendRequest = async (req, res) => {
     }
 
     if (userId === String(currentUserId)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Cannot accept friend request from yourself",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Cannot accept friend request from yourself",
+      });
     }
 
     const currentUser = await User.findById(currentUserId);
@@ -895,12 +1030,10 @@ export const changeUsername = async (req, res) => {
     );
 
     if (recentChanges.length >= 2) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "You can only change your username twice per week",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "You can only change your username twice per week",
+      });
     }
 
     // Change username
