@@ -55,6 +55,7 @@ export const chatSocket = (io) => {
     socket.on("conversation:join", ({ conversationId }) => {
       socket.join(conversationId);
       console.log(`💬 ${socket.id} joined conversation ${conversationId}`);
+       console.log("📡 Rooms now:", Array.from(io.sockets.adapter.rooms.keys()));
     });
 
     socket.on("conversation:leave", ({ conversationId }) => {
