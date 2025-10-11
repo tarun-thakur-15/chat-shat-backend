@@ -226,6 +226,12 @@ export const sendMessage = async (req, res) => {
 
     const io = req.app.get("io");
     io.to(conversation._id.toString()).emit("receiveMessage", chat);
+    io.to(receiverId.toString()).emit("receiveMessage", chat);
+    console.log("📤 Emitting to room:", conversation._id.toString());
+    console.log(
+      "📡 Active rooms:",
+      Array.from(io.sockets.adapter.rooms.keys())
+    );
 
     // ✅ Updated conversation with new message counts
     const updatedConversation = await Conversation.findById(conversation._id)
@@ -532,12 +538,10 @@ export const unsendMessage = async (req, res) => {
 
     // Only sender can unsend
     if (message.sender.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You can only unsend your own messages",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You can only unsend your own messages",
+      });
     }
 
     const conversationId = message.conversation;
